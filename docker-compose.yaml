@@ -1,0 +1,7 @@
+services:
+    ddaerospike:
+        build:
+            context: ./
+            dockerfile: ./Dockerfile
+        volumes:
+            - .:/src
