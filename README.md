@@ -175,3 +175,31 @@ filters = (
 items = await profile_manager.get_list(filters, limit=100)   # [AerospikeDataWithPK(pk='1', data=ProfileData(...)), ...]
 first = await profile_manager.find_one(filters)
 ```
+
+## AerospikeFeatureFlagStorage
+
+The Aerospike backend of [ddutils](https://github.com/davyddd/ddutils) feature flags: one set, a flag per record
+(`FeatureFlagData`: `enabled`, `proportion`, `payload` bins, the flag name is the primary key), through an
+`AerospikeManager[FeatureFlagData]` the application wires. Client and server errors raise
+`FeatureFlagStorageError`, so `FeatureFlags` keeps serving the last known values; a record that does not validate
+is read as the defaults.
+
+```python
+from ddaerospike.feature_flags import AerospikeFeatureFlagStorage, FeatureFlagData
+from ddaerospike.manager import AerospikeManager
+from ddutils.feature_flags import FeatureFlags
+
+
+class FeatureFlagManager(AerospikeManager[FeatureFlagData]):
+    client_factory = aerospike_client_factory
+    namespace = settings.AEROSPIKE_URL.namespace
+    set_name = 'feature_flag'
+
+
+feature_flags = FeatureFlags(AerospikeFeatureFlagStorage(FeatureFlagManager()))
+
+if await feature_flags.is_enabled('new_checkout'):            # proportion 1.0: on or off for everyone
+    ...
+if await feature_flags.is_enabled('new_ranking', user_id):  # on for `proportion` of the users
+    ...
+```
