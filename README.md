@@ -30,6 +30,17 @@ fab bash       # bash inside the container
 This project was generated from [dd-lib-stub](https://github.com/davyddd/dd-lib-stub);
 run `copier update` to pull in template updates.
 
+## aerospike-native
+
+The library sits on `aerospike-native`, the official Rust-core asyncio client. Two of its properties shape how the
+manager is wired: a client completes its futures on the event loop it was created in, so the factory behind
+`client_factory` keeps one client per process and loop; and on import it installs uvloop as the global event loop
+policy (`AEROSPIKE_NO_UVLOOP=1` opts out), which importing `ddaerospike` therefore does too.
+
+Errors come out as the client raises them: `RecordNotFound`, `RecordExistsError` and the other mapped errors
+subclass `aerospike_native.exceptions.AerospikeError`, a server code without a mapping arrives as
+`aerospike_native.ServerError`, which does not. "Any Aerospike error" is `except (AerospikeError, ServerError)`.
+
 ## AerospikeDsn
 
 A settings field for a cluster: `aerospike://host[:port][,host[:port]]/<namespace>`, validated as a URL like
@@ -104,17 +115,28 @@ from aerospike_native import Client, ClientPolicy, new_client
 from ddutils.connections import ConnectionManagerFactory
 from ddutils.scoped_registry import ScopedRegistry
 
+from ddaerospike.dsn import AerospikeDsn
 from ddaerospike.manager import AerospikeManager
 
 
 class AerospikeConnectionAlias(str, Enum):
+    """The cluster to talk to; the alias resolves to its DSN, everything else derives from that."""
+
     PRIMARY = 'primary'
 
+    @property
+    def url(self) -> AerospikeDsn:
+        return {AerospikeConnectionAlias.PRIMARY: settings.AEROSPIKE_URL}[self]
 
-async def create_client() -> Client:
+    @property
+    def namespace(self) -> str:
+        return self.url.namespace
+
+
+async def create_client(alias: AerospikeConnectionAlias) -> Client:
     policy = ClientPolicy()
     policy.timeout = 5_000
-    return await new_client(policy, settings.AEROSPIKE_URL.seeds)
+    return await new_client(policy, alias.url.seeds)
 
 
 def client_scope() -> tuple[int, asyncio.AbstractEventLoop]:
@@ -122,18 +144,20 @@ def client_scope() -> tuple[int, asyncio.AbstractEventLoop]:
 
 
 client_registries = {
-    AerospikeConnectionAlias.PRIMARY: ScopedRegistry[Client](
-        create_func=create_client, scope_func=client_scope, destructor_method_name='close'
-    ),
+    alias: ScopedRegistry[Client](
+        create_func=partial(create_client, alias), scope_func=client_scope, destructor_method_name='close'
+    )
+    for alias in AerospikeConnectionAlias
 }
 aerospike_client_factory = ConnectionManagerFactory(client_registries, default=AerospikeConnectionAlias.PRIMARY)
 
 
 class ProfileManager(AerospikeManager[ProfileData]):
     client_factory = aerospike_client_factory
-    namespace = settings.AEROSPIKE_URL.namespace
+    namespace = AerospikeConnectionAlias.PRIMARY.namespace
     set_name = 'profile'
     ttl_seconds = 30 * 24 * 60 * 60  # set by every write; None leaves the record's TTL alone
+    # alias = AerospikeConnectionAlias.PRIMARY  # None picks the factory's default
 
 
 profile_manager = ProfileManager()
@@ -150,7 +174,9 @@ await aerospike_client_factory.close()                             # on shutdown
 A bin set to `None` is removed from the record by the write; inside a composite bin the `None` values are left
 out. The `read_policy_fields`, `batch_policy_fields`, `query_policy_fields` and `write_policy_fields` class
 attributes (typed dicts from `ddaerospike.policies`) override the defaults: short timeouts, retries on reads only,
-`send_key` on writes so queries can return the primary key.
+`send_key` on writes so queries can return the primary key. `get_map` holds what the batch read; a key it could not
+answer (a timeout, a node away) is left out like a missing one. `get_list` passes `limit` to the server as
+`max_records` and stops reading at exactly `limit`.
 
 ## Filters
 
