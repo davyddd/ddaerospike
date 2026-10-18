@@ -143,6 +143,18 @@ class TestAerospikeManager(IsolatedAsyncioTestCase):
         self.assertTrue(deleted)
         self.assertFalse(deleted_again)
 
+    async def test_get_map_leaves_out_a_key_the_batch_could_not_answer(self):
+        # Arrange
+        await self.manager.put(1, ProfileData(name='a'))
+        await self.manager.put(2, ProfileData(name='b'))
+        self.client.failing_keys.add('2')
+
+        # Act
+        found = await self.manager.get_map([1, 2])
+
+        # Assert: the map holds what was read, the failed key is simply absent
+        self.assertEqual(sorted(found), ['1'])
+
     async def test_get_list_and_find_one_with_filters(self):
         # Arrange
         await self.manager.put(1, ProfileData(name='a', age=20))
@@ -159,6 +171,7 @@ class TestAerospikeManager(IsolatedAsyncioTestCase):
         self.assertEqual(items[0].data.name, 'a')
         self.assertIsNotNone(one)
         self.assertIsNotNone(self.client.query_calls[-1]['policy'].filter_expression)
+        self.assertEqual([call['policy'].max_records for call in self.client.query_calls], [1, 1])
         self.assertTrue(self.client.last_recordset.closed)
 
     async def test_get_list_rejects_filters_built_for_another_model(self):

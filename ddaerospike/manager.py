@@ -64,7 +64,7 @@ class AerospikeManager(ABC, Generic[AerospikeDataT]):
     _model: ClassVar[type[AerospikeData]]
 
     # Wiring, set by the subclass
-    client_factory: ClassVar[ConnectionManagerFactory[Any, Client, AbstractAsyncContextManager[Client]]]
+    client_factory: ClassVar[ConnectionManagerFactory[Any, Client, Any]]
     alias: ClassVar[Hashable | None] = None
     namespace: ClassVar[str]
     set_name: ClassVar[str]
@@ -99,10 +99,13 @@ class AerospikeManager(ABC, Generic[AerospikeDataT]):
     def batch_policy(self) -> BatchPolicy:
         return build_policy(BatchPolicy, self.batch_policy_fields)
 
-    def _query_policy(self, filters: AerospikeFilterCollection[AerospikeDataT] | None) -> QueryPolicy:
+    def _query_policy(self, filters: AerospikeFilterCollection[AerospikeDataT] | None, limit: int) -> QueryPolicy:
         policy = build_policy(QueryPolicy, self.query_policy_fields)
         if filters is not None:
             policy.filter_expression = filters.compiled_expression
+        # Stops the nodes once `limit` records are out instead of streaming the whole set to the client; the
+        # server splits it across nodes and treats it as an upper bound, `_collect` applies the exact limit.
+        policy.max_records = limit
         return policy
 
     def _write_policy(self, ttl: int | None = None, **overrides: Any) -> WritePolicy:
@@ -165,6 +168,8 @@ class AerospikeManager(ABC, Generic[AerospikeDataT]):
 
         results: dict[str, AerospikeDataT] = {}
         for batch_record in batch:
+            # Only what was read: a key the batch could not answer (a timeout, a node away) is left out, like a
+            # missing one, so one bad key does not fail the whole map
             record = batch_record.record  # a copy of the record; read it once
             data = self._build(record.bins) if record is not None else None
             if data is not None:
@@ -185,7 +190,7 @@ class AerospikeManager(ABC, Generic[AerospikeDataT]):
                 statement.filters = [index_filter]
 
         async with self._open_client() as client:
-            recordset = await client.query(statement, PartitionFilter.all(), policy=self._query_policy(filters))
+            recordset = await client.query(statement, PartitionFilter.all(), policy=self._query_policy(filters, limit))
             try:
                 return await self._collect(recordset, limit)
             finally:

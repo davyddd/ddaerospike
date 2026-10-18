@@ -20,6 +20,7 @@ class FakeRecord:
 class FakeBatchRecord:
     key: Key
     record: FakeRecord | None
+    result_code: ResultCode = ResultCode.OK
 
 
 class FakeRecordSet:
@@ -43,6 +44,7 @@ class FakeClient:
 
     def __init__(self):
         self.store: dict[tuple[str, str, str], dict[str, Any]] = {}
+        self.failing_keys: set[str] = set()  # primary keys whose batch read comes back with a timeout
         self.policies: list[Any] = []
         self.query_calls: list[dict[str, Any]] = []
         self.closed = False
@@ -62,9 +64,13 @@ class FakeClient:
         self.policies.append(batch_policy)
         result = []
         for key in keys:
+            if str(key.value) in self.failing_keys:
+                result.append(FakeBatchRecord(key, None, ResultCode.TIMEOUT))
+                continue
             stored = self.store.get(self._index(key))
             record = FakeRecord(key, {n: v for n, v in stored.items() if n in bins}) if stored is not None else None
-            result.append(FakeBatchRecord(key, record))
+            code = ResultCode.OK if stored is not None else ResultCode.KEY_NOT_FOUND_ERROR
+            result.append(FakeBatchRecord(key, record, code))
         return result
 
     async def query(self, statement: Any, _partition_filter: Any, policy: Any = None) -> FakeRecordSet:
