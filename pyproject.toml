@@ -1,13 +1,13 @@
 [project]
 name = "ddaerospike"
 description = "Aerospike helpers: typed records, filters and a set manager on top of aerospike-native"
-version = "0.0.2"
+version = "0.0.3"
 authors = [{ name = "davyddd" }]
 license = "MIT"
 license-files = ["LICENSE"]
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
-keywords = ["python", "aerospike", "aerospike-native", "ddaerospike"]
+keywords = ["python", "ddaerospike", "aerospike", "aerospike-native", "asyncio", "key-value", "nosql", "records", "bins", "filter expressions", "secondary index", "ttl", "pydantic", "feature flags"]
 # uv_build does not derive these from requires-python (poetry did); PyPI and the pyversions badge read them
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -20,7 +20,7 @@ classifiers = [
 dependencies = [
     "aerospike-native>=1.0,<2",
     "dddesign>=2.1.1,<3",
-    "ddutils>=0.3.2,<0.4.0",
+    "ddutils>=0.4.0,<0.5.0",
     "pydantic>=2.10,<3",
 ]
 
