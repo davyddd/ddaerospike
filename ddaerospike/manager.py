@@ -69,7 +69,7 @@ class AerospikeManager(ABC, Generic[AerospikeDataT]):
     namespace: ClassVar[str]
     set_name: ClassVar[str]
     # TTL set by every write, so an active record keeps living and a forgotten one expires. None: a write leaves
-    # the record's TTL alone, a new record gets the namespace `default-ttl` (0 on the mail cluster: never expires)
+    # the record's TTL alone, a new record gets the namespace `default-ttl` (0 means never expires)
     ttl_seconds: ClassVar[int | None] = None
     read_policy_fields: ClassVar[AerospikeReadPolicyFields] = DEFAULT_READ_POLICY
     batch_policy_fields: ClassVar[AerospikeBatchPolicyFields] = DEFAULT_BATCH_POLICY

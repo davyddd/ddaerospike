@@ -226,7 +226,7 @@ toml = [
 
 [[package]]
 name = "ddaerospike"
-version = "0.0.1"
+version = "0.0.3"
 source = { editable = "." }
 dependencies = [
     { name = "aerospike-native" },
@@ -255,7 +255,7 @@ test = [
 requires-dist = [
     { name = "aerospike-native", specifier = ">=1.0,<2" },
     { name = "dddesign", specifier = ">=2.1.1,<3" },
-    { name = "ddutils", specifier = ">=0.3.2,<0.4.0" },
+    { name = "ddutils", specifier = ">=0.4.0,<0.5.0" },
     { name = "pydantic", specifier = ">=2.10,<3" },
 ]
 
@@ -277,24 +277,24 @@ test = [
 
 [[package]]
 name = "dddesign"
-version = "2.1.1"
+version = "2.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "ddutils" },
     { name = "pydantic" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4c/c6/97c75eea216b8838430ba8d1aec78c31ed72f0f715964f061bd918122a03/dddesign-2.1.1.tar.gz", hash = "sha256:5ea313b893d6feb51e381b7be0154e3c7dfba7be12091378af672321a3ef62d8", size = 16976, upload-time = "2026-10-14T11:49:37.328Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/69/05/1221aaaf8923c199fdf12417f2d4fb0d0cde23fd651567f6de470b2d34a8/dddesign-2.1.2.tar.gz", hash = "sha256:604b208125039bfa62ec7ebf47cccaa64a16bdad363c26d01e8618a2076a3a06", size = 20091, upload-time = "2026-10-19T18:00:13.165Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cf/7b/5b870dccc9b2a6e1052dc9b4629b67f43f1034256520c5d1633a96d205fb/dddesign-2.1.1-py3-none-any.whl", hash = "sha256:32bc9b0d827c9aef7e974f472bcb91d0be5c40407e86f7a26d1b017d47528c2c", size = 32756, upload-time = "2026-10-14T11:49:35.917Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/1a/4ce2a03b1c14875a7019bdc15c982d7f7fa17c2af12d1c75c7179f724a29/dddesign-2.1.2-py3-none-any.whl", hash = "sha256:80f83a89259d63dd58dd3a9cd3547a2e2d418cde544cf7144fa0311f3631d265", size = 35685, upload-time = "2026-10-19T18:00:11.487Z" },
 ]
 
 [[package]]
 name = "ddutils"
-version = "0.3.2"
+version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/b5/7d/086b25d5915698bf14d8236a9acaccd2e6e3e244f150ec4bb60ee00e5157/ddutils-0.3.2.tar.gz", hash = "sha256:8f87ae5b6d7453f10fed5bb842b162e65400a45e89ddf4749071c286298d7fb7", size = 22087, upload-time = "2026-10-18T17:24:13.993Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/51/8d/e07934dc3a88b10395504cc39980b08bf6836cb58aa323b8f49d6ff7e458/ddutils-0.4.1.tar.gz", hash = "sha256:29602b11a903f0e204fdd5bdbff9d6808db262a8c47486ea878af623caa1d7c6", size = 35772, upload-time = "2026-10-19T18:00:01.098Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/a3/e1/01e8132066536ee03cf6852157c81abe579528a8414fca080e5544c50a70/ddutils-0.3.2-py3-none-any.whl", hash = "sha256:ad5efbb0a7ce9d410d6a956fcc19fdfdbfb116fa6e3e7784399f2275e0027323", size = 26886, upload-time = "2026-10-18T17:24:12.878Z" },
+    { url = "https://files.pythonhosted.org/packages/d6/a7/cd0240907c87810f771bfc49cbe0cb9de5fa032ef0525e17ae4b4d5aa435/ddutils-0.4.1-py3-none-any.whl", hash = "sha256:f41becdbbc68a2ae42c807a2b29354ec041d766148206c3fd7b071d3f5ad0ca2", size = 32988, upload-time = "2026-10-19T17:59:59.515Z" },
 ]
 
 [[package]]

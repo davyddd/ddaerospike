@@ -1,11 +1,10 @@
 # Changes here will be overwritten by Copier; do NOT edit manually.
-_commit: v0.0.9
+_commit: v0.0.12
 _src_path: gh:davyddd/dd-lib-stub
 copyright_year: 2026
 max_python_version: '3.14'
 min_python_version: '3.11'
-package_description: 'Aerospike helpers: typed records, filters and a set manager
-    on top of aerospike-native'
-package_keywords: python, aerospike, aerospike-native, ddaerospike
+package_description: 'Aerospike helpers: typed records, filters and a set manager on top of aerospike-native'
+package_keywords: python, ddaerospike, aerospike, aerospike-native, asyncio, key-value, nosql, records, bins, filter expressions, secondary index, ttl, pydantic, feature flags
 package_name: ddaerospike
 test_matrix: '{}'
